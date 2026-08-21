@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Run tests
+        run: npm test
+
+      - name: Validate extension
+        run: npm run validate
+
+      - name: Build Chrome Web Store package
+        run: npm run package
+
+      - name: Verify package integrity
+        run: unzip -t "dist/ego-dimmer-v$(node -p 'require("./manifest.json").version').zip"

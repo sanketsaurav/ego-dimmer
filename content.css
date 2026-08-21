@@ -1,0 +1,7 @@
+html[data-egodim-mode="standard"] :is(img, video, canvas) {
+  dynamic-range-limit: standard !important;
+}
+
+html[data-egodim-mode="constrained"] :is(img, video, canvas) {
+  dynamic-range-limit: constrained !important;
+}

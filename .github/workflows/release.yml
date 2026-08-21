@@ -1,0 +1,102 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  github-release:
+    name: Verify, package, and release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Verify tag and extension
+        run: |
+          node scripts/check-version.mjs "$GITHUB_REF_NAME"
+          npm test
+          npm run validate
+
+      - name: Build Chrome Web Store package
+        run: npm run package
+
+      - name: Verify package integrity
+        run: unzip -t "dist/ego-dimmer-${GITHUB_REF_NAME}.zip"
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "dist/ego-dimmer-${GITHUB_REF_NAME}.zip" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "dist/ego-dimmer-${GITHUB_REF_NAME}.zip" --verify-tag --generate-notes --title "Ego Dimmer ${GITHUB_REF_NAME}"
+          fi
+
+  chrome-web-store:
+    name: Submit to Chrome Web Store
+    needs: github-release
+    runs-on: ubuntu-latest
+    environment: chrome-web-store
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Validate publishing configuration
+        env:
+          CWS_PUBLISHER_ID: ${{ vars.CWS_PUBLISHER_ID }}
+          CWS_EXTENSION_ID: ${{ vars.CWS_EXTENSION_ID }}
+          CWS_SERVICE_ACCOUNT: ${{ vars.CWS_SERVICE_ACCOUNT }}
+          GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+        run: |
+          test -n "$CWS_PUBLISHER_ID"
+          test -n "$CWS_EXTENSION_ID"
+          test -n "$CWS_SERVICE_ACCOUNT"
+          test -n "$GCP_WORKLOAD_IDENTITY_PROVIDER"
+
+      - name: Download release package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p dist
+          gh release download "$GITHUB_REF_NAME" --pattern "ego-dimmer-${GITHUB_REF_NAME}.zip" --dir dist
+
+      - name: Authenticate to Google Cloud
+        id: google-auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CWS_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_lifetime: 600s
+          access_token_scopes: https://www.googleapis.com/auth/chromewebstore
+
+      - name: Upload and submit for review
+        env:
+          CWS_PUBLISHER_ID: ${{ vars.CWS_PUBLISHER_ID }}
+          CWS_EXTENSION_ID: ${{ vars.CWS_EXTENSION_ID }}
+          CWS_ACCESS_TOKEN: ${{ steps.google-auth.outputs.access_token }}
+        run: node scripts/publish-web-store.mjs "dist/ego-dimmer-${GITHUB_REF_NAME}.zip"

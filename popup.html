@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ego Dimmer</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main class="panel">
+      <header class="masthead">
+        <div class="brand-lockup">
+          <div class="brand-icon" aria-hidden="true">
+            <span class="brand-disc"></span>
+            <span class="brand-slash"></span>
+          </div>
+          <div>
+            <p class="eyebrow">HDR neutralizer</p>
+            <h1>Ego <span>Dimmer</span></h1>
+          </div>
+        </div>
+
+        <button
+          class="switch switch--master"
+          id="master-toggle"
+          type="button"
+          role="switch"
+          aria-checked="true"
+          aria-label="Turn Ego Dimmer off"
+        >
+          <span class="switch__track"><span class="switch__thumb"></span></span>
+          <span class="switch__label" id="master-label">On</span>
+        </button>
+      </header>
+
+      <div class="meter" aria-hidden="true">
+        <span class="meter__line"></span>
+        <span class="meter__tick meter__tick--one"></span>
+        <span class="meter__tick meter__tick--two"></span>
+        <span class="meter__tick meter__tick--three"></span>
+        <span class="meter__marker" id="meter-marker"></span>
+      </div>
+
+      <section class="section this-site" id="this-site" hidden>
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div>
+            <p class="section-label">This site</p>
+            <h2 id="active-hostname"></h2>
+          </div>
+        </div>
+        <div id="this-site-action"></div>
+      </section>
+
+      <section class="section intensity">
+        <div class="section-heading section-heading--compact">
+          <span class="section-number">02</span>
+          <div>
+            <p class="section-label">Intensity</p>
+            <h2>Choose the ceiling</h2>
+          </div>
+        </div>
+
+        <fieldset class="mode-selector">
+          <legend class="sr-only">Dimming intensity</legend>
+          <label class="mode-option">
+            <input type="radio" name="mode" value="standard" checked>
+            <span class="mode-option__control">
+              <span class="mode-option__title">Full SDR</span>
+              <span class="mode-option__note">Flat &amp; fair</span>
+            </span>
+          </label>
+          <label class="mode-option">
+            <input type="radio" name="mode" value="constrained">
+            <span class="mode-option__control">
+              <span class="mode-option__title">Gentle</span>
+              <span class="mode-option__note">A little glow</span>
+            </span>
+          </label>
+        </fieldset>
+      </section>
+
+      <section class="section sites-section">
+        <div class="section-heading section-heading--compact">
+          <span class="section-number">03</span>
+          <div>
+            <p class="section-label">Site list</p>
+            <h2>Where egos get dimmed</h2>
+          </div>
+          <span class="site-count" id="site-count" aria-label="0 sites">00</span>
+        </div>
+
+        <div class="site-list" id="site-list"></div>
+
+        <form class="add-form" id="add-form" novalidate>
+          <label class="sr-only" for="domain-input">Domain or website URL</label>
+          <input
+            id="domain-input"
+            type="text"
+            inputmode="url"
+            autocomplete="url"
+            autocapitalize="none"
+            spellcheck="false"
+            placeholder="example.com"
+          >
+          <button id="add-button" type="submit">Add site</button>
+        </form>
+
+        <p class="notice" id="notice" role="status" aria-live="polite"></p>
+      </section>
+
+      <footer>
+        <span class="privacy-dot" aria-hidden="true"></span>
+        Local effect. No tracking. No image processing.
+      </footer>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

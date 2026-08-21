@@ -1,0 +1,3 @@
+dist/
+gha-creds-*.json
+.DS_Store
