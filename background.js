@@ -4,7 +4,7 @@
   const DEFAULT_SITES = Object.freeze({
     "linkedin.com": true,
     "x.com": true,
-    "twitter.com": true
+    "twitter.com": true,
   });
   const DEFAULT_DOMAINS = new Set(Object.keys(DEFAULT_SITES));
   const VALID_MODES = new Set(["standard", "constrained"]);
@@ -12,7 +12,9 @@
 
   function normalizeState(value = {}) {
     const storedSites =
-      value.sites && typeof value.sites === "object" && !Array.isArray(value.sites)
+      value.sites &&
+      typeof value.sites === "object" &&
+      !Array.isArray(value.sites)
         ? value.sites
         : {};
     const sites = { ...DEFAULT_SITES };
@@ -24,9 +26,8 @@
     }
 
     return {
-      enabled: typeof value.enabled === "boolean" ? value.enabled : true,
       mode: VALID_MODES.has(value.mode) ? value.mode : "standard",
-      sites
+      sites,
     };
   }
 
@@ -35,13 +36,17 @@
       return true;
     }
 
-    if (typeof domain !== "string" || domain.length > 253 || !domain.includes(".")) {
+    if (
+      typeof domain !== "string" ||
+      domain.length > 253 ||
+      !domain.includes(".")
+    ) {
       return false;
     }
 
-    return domain.split(".").every((label) =>
-      /^(?!-)[a-z0-9-]{1,63}(?<!-)$/.test(label)
-    );
+    return domain
+      .split(".")
+      .every((label) => /^(?!-)[a-z0-9-]{1,63}(?<!-)$/.test(label));
   }
 
   function scriptFor(domain) {
@@ -52,7 +57,7 @@
       js: ["content.js"],
       runAt: "document_start",
       allFrames: true,
-      persistAcrossSessions: true
+      persistAcrossSessions: true,
     };
   }
 
@@ -61,20 +66,23 @@
     const normalized = normalizeState(stored);
     const patch = {};
 
-    if (typeof stored.enabled !== "boolean") {
-      patch.enabled = normalized.enabled;
-    }
     if (!VALID_MODES.has(stored.mode)) {
       patch.mode = normalized.mode;
     }
 
     const storedSites =
-      stored.sites && typeof stored.sites === "object" && !Array.isArray(stored.sites)
+      stored.sites &&
+      typeof stored.sites === "object" &&
+      !Array.isArray(stored.sites)
         ? stored.sites
         : {};
     const sitesNeedRepair =
-      Object.keys(DEFAULT_SITES).some((domain) => typeof storedSites[domain] !== "boolean") ||
-      Object.entries(storedSites).some(([, enabled]) => typeof enabled !== "boolean");
+      Object.keys(DEFAULT_SITES).some(
+        (domain) => typeof storedSites[domain] !== "boolean",
+      ) ||
+      Object.entries(storedSites).some(
+        ([, enabled]) => typeof enabled !== "boolean",
+      );
     if (sitesNeedRepair) {
       patch.sites = normalized.sites;
     }
@@ -82,15 +90,11 @@
     if (Object.keys(patch).length > 0) {
       await chrome.storage.sync.set(patch);
     }
+    if (Object.hasOwn(stored, "enabled")) {
+      await chrome.storage.sync.remove("enabled");
+    }
 
     return normalized;
-  }
-
-  async function updateBadge(enabled) {
-    await Promise.all([
-      chrome.action.setBadgeBackgroundColor({ color: "#161613" }),
-      chrome.action.setBadgeText({ text: enabled ? "" : "OFF" })
-    ]);
   }
 
   async function reconcileDynamicScripts(state) {
@@ -98,12 +102,14 @@
     const managed = new Map(
       registrations
         .filter(({ id }) => id.startsWith(SCRIPT_PREFIX))
-        .map((registration) => [registration.id, registration])
+        .map((registration) => [registration.id, registration]),
     );
     const desiredDomains = Object.keys(state.sites).filter(
-      (domain) => !DEFAULT_DOMAINS.has(domain) && isValidStoredDomain(domain)
+      (domain) => !DEFAULT_DOMAINS.has(domain) && isValidStoredDomain(domain),
     );
-    const desiredIds = new Set(desiredDomains.map((domain) => `${SCRIPT_PREFIX}${domain}`));
+    const desiredIds = new Set(
+      desiredDomains.map((domain) => `${SCRIPT_PREFIX}${domain}`),
+    );
     const staleIds = [...managed.keys()].filter((id) => !desiredIds.has(id));
 
     if (staleIds.length > 0) {
@@ -113,7 +119,7 @@
     for (const domain of desiredDomains) {
       const descriptor = scriptFor(domain);
       const hasPermission = await chrome.permissions.contains({
-        origins: descriptor.matches
+        origins: descriptor.matches,
       });
 
       if (!hasPermission) {
@@ -130,7 +136,10 @@
 
   async function initialize() {
     const state = await ensureStoredState();
-    await Promise.all([updateBadge(state.enabled), reconcileDynamicScripts(state)]);
+    await Promise.all([
+      chrome.action.setBadgeText({ text: "" }),
+      reconcileDynamicScripts(state),
+    ]);
   }
 
   function initializeSafely() {
@@ -148,10 +157,6 @@
       return;
     }
 
-    if (Object.hasOwn(changes, "enabled")) {
-      updateBadge(changes.enabled.newValue === true).catch(() => {});
-    }
-
     if (Object.hasOwn(changes, "sites")) {
       ensureStoredState()
         .then(reconcileDynamicScripts)
@@ -163,7 +168,7 @@
     globalThis.__EGODIM_TEST__.background = {
       isValidStoredDomain,
       normalizeState,
-      scriptFor
+      scriptFor,
     };
   }
 })();

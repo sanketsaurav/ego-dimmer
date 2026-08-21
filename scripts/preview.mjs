@@ -10,13 +10,14 @@ const types = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".png": "image/png",
-  ".svg": "image/svg+xml"
+  ".svg": "image/svg+xml",
 };
 
 createServer(async (request, response) => {
   try {
     const url = new URL(request.url || "/", `http://${request.headers.host}`);
-    const requestedPath = url.pathname === "/" ? "popup.html" : url.pathname.slice(1);
+    const requestedPath =
+      url.pathname === "/" ? "popup.html" : url.pathname.slice(1);
     const filePath = resolve(root, requestedPath);
 
     if (relative(root, filePath).startsWith("..")) {
@@ -31,14 +32,14 @@ createServer(async (request, response) => {
           .toString("utf8")
           .replace(
             '<script src="popup.js"></script>',
-            '<script src="tests/fixtures/chrome-mock.js"></script>\n    <script src="popup.js"></script>'
-          )
+            '<script src="tests/fixtures/chrome-mock.js"></script>\n    <script src="popup.js"></script>',
+          ),
       );
     }
 
     response.writeHead(200, {
       "Cache-Control": "no-store",
-      "Content-Type": types[extname(filePath)] || "application/octet-stream"
+      "Content-Type": types[extname(filePath)] || "application/octet-stream",
     });
     response.end(body);
   } catch {

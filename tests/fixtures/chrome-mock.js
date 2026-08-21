@@ -1,21 +1,24 @@
 (() => {
   const mockState = {
-    enabled: true,
     mode: "standard",
     sites: {
       "linkedin.com": true,
       "x.com": true,
       "twitter.com": false,
       "example.com": true,
-      "photos.example.net": false
-    }
+      "photos.example.net": false,
+    },
   };
   const registrations = new Map();
 
   globalThis.chrome = {
     permissions: {
-      async remove() { return true; },
-      async request() { return true; }
+      async remove() {
+        return true;
+      },
+      async request() {
+        return true;
+      },
     },
     scripting: {
       async getRegisteredContentScripts({ ids } = {}) {
@@ -30,21 +33,27 @@
       },
       async updateContentScripts(scripts) {
         scripts.forEach((script) => registrations.set(script.id, script));
-      }
+      },
     },
     storage: {
       onChanged: { addListener() {} },
       sync: {
-        async get() { return structuredClone(mockState); },
-        async set(patch) { Object.assign(mockState, structuredClone(patch)); }
-      }
+        async get() {
+          return structuredClone(mockState);
+        },
+        async set(patch) {
+          Object.assign(mockState, structuredClone(patch));
+        },
+      },
     },
     tabs: {
       async query() {
-        return [{
-          url: "https://ccameron-chromium.github.io/hdr-headroom-limit/example.html"
-        }];
-      }
-    }
+        return [
+          {
+            url: "https://ccameron-chromium.github.io/hdr-headroom-limit/example.html",
+          },
+        ];
+      },
+    },
   };
 })();

@@ -4,14 +4,13 @@
   const DEFAULT_SITES = Object.freeze({
     "linkedin.com": true,
     "x.com": true,
-    "twitter.com": true
+    "twitter.com": true,
   });
   const VALID_MODES = new Set(["standard", "constrained"]);
 
   let state = {
-    enabled: true,
     mode: "standard",
-    sites: { ...DEFAULT_SITES }
+    sites: { ...DEFAULT_SITES },
   };
 
   // This intentionally happens before the first asynchronous storage read.
@@ -29,7 +28,9 @@
 
   function mergeState(value = {}) {
     const storedSites =
-      value.sites && typeof value.sites === "object" && !Array.isArray(value.sites)
+      value.sites &&
+      typeof value.sites === "object" &&
+      !Array.isArray(value.sites)
         ? value.sites
         : {};
     const sites = { ...DEFAULT_SITES };
@@ -41,9 +42,8 @@
     }
 
     return {
-      enabled: typeof value.enabled === "boolean" ? value.enabled : true,
       mode: VALID_MODES.has(value.mode) ? value.mode : "standard",
-      sites
+      sites,
     };
   }
 
@@ -57,7 +57,10 @@
         normalizedHostname === normalizedDomain ||
         normalizedHostname.endsWith(`.${normalizedDomain}`);
 
-      if (matches && (!bestMatch || normalizedDomain.length > bestMatch.domain.length)) {
+      if (
+        matches &&
+        (!bestMatch || normalizedDomain.length > bestMatch.domain.length)
+      ) {
         bestMatch = { domain: normalizedDomain, enabled };
       }
     }
@@ -72,7 +75,7 @@
     }
 
     const site = findMatchingSite(location.hostname, state.sites);
-    if (state.enabled === true && site?.enabled === true) {
+    if (site?.enabled === true) {
       root.dataset.egodimMode = state.mode;
     } else {
       root.removeAttribute("data-egodim-mode");
@@ -80,7 +83,7 @@
   }
 
   function readState() {
-    chrome.storage.sync.get(["enabled", "mode", "sites"], (stored) => {
+    chrome.storage.sync.get(["mode", "sites"], (stored) => {
       if (chrome.runtime.lastError) {
         // Keep the safe optimistic defaults when Chrome Sync is unavailable.
         reconcile();
@@ -98,7 +101,7 @@
     }
 
     const next = { ...state };
-    for (const key of ["enabled", "mode", "sites"]) {
+    for (const key of ["mode", "sites"]) {
       if (Object.hasOwn(changes, key)) {
         next[key] = changes[key].newValue;
       }
@@ -114,7 +117,7 @@
     globalThis.__EGODIM_TEST__.content = {
       findMatchingSite,
       mergeState,
-      normalizeHostname
+      normalizeHostname,
     };
   }
 })();

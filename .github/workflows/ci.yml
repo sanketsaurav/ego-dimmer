@@ -23,11 +23,11 @@ jobs:
           node-version: 24
           package-manager-cache: false
 
-      - name: Run tests
-        run: npm test
+      - name: Install development dependencies
+        run: npm ci
 
-      - name: Validate extension
-        run: npm run validate
+      - name: Check formatting, lint, tests, and extension structure
+        run: npm run check
 
       - name: Build Chrome Web Store package
         run: npm run package

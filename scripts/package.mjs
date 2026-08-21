@@ -4,7 +4,9 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const manifest = JSON.parse(await readFile(join(root, "manifest.json"), "utf8"));
+const manifest = JSON.parse(
+  await readFile(join(root, "manifest.json"), "utf8"),
+);
 const files = [
   "manifest.json",
   "background.js",
@@ -16,10 +18,10 @@ const files = [
   "icons/icon16.png",
   "icons/icon32.png",
   "icons/icon48.png",
-  "icons/icon128.png"
+  "icons/icon128.png",
 ];
 const output = resolve(
-  process.argv[2] || join(root, "dist", `ego-dimmer-v${manifest.version}.zip`)
+  process.argv[2] || join(root, "dist", `ego-dimmer-v${manifest.version}.zip`),
 );
 
 const crcTable = Array.from({ length: 256 }, (_, index) => {
@@ -88,7 +90,7 @@ for (const name of files) {
     crc: crc32(data),
     compressedSize: compressed.length,
     size: data.length,
-    offset
+    offset,
   };
   const encodedName = Buffer.from(name, "utf8");
   const header = localHeader(entry);

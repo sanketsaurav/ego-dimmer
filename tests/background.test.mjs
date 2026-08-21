@@ -3,50 +3,60 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import vm from "node:vm";
 
-const source = await readFile(new URL("../background.js", import.meta.url), "utf8");
+const source = await readFile(
+  new URL("../background.js", import.meta.url),
+  "utf8",
+);
 const noopEvent = { addListener() {} };
 const context = vm.createContext({
   __EGODIM_TEST__: {},
   chrome: {
     action: {
       async setBadgeBackgroundColor() {},
-      async setBadgeText() {}
+      async setBadgeText() {},
     },
-    permissions: { async contains() { return false; } },
+    permissions: {
+      async contains() {
+        return false;
+      },
+    },
     runtime: { onInstalled: noopEvent, onStartup: noopEvent },
     scripting: {
-      async getRegisteredContentScripts() { return []; },
+      async getRegisteredContentScripts() {
+        return [];
+      },
       async registerContentScripts() {},
       async unregisterContentScripts() {},
-      async updateContentScripts() {}
+      async updateContentScripts() {},
     },
     storage: {
       onChanged: noopEvent,
       sync: {
-        async get() { return {}; },
-        async set() {}
-      }
-    }
-  }
+        async get() {
+          return {};
+        },
+        async remove() {},
+        async set() {},
+      },
+    },
+  },
 });
 vm.runInContext(source, context);
 const background = context.__EGODIM_TEST__.background;
 
 test("repairs missing defaults without discarding custom sites", () => {
   const normalized = background.normalizeState({
-    enabled: false,
     mode: "constrained",
-    sites: { "example.com": false, "x.com": false }
+    sites: { "example.com": false, "x.com": false },
   });
   assert.deepEqual(JSON.parse(JSON.stringify(normalized)), {
-    enabled: false,
     mode: "constrained",
     sites: {
       "linkedin.com": true,
       "x.com": false,
       "twitter.com": true,
-      "example.com": false
-    }
+      "example.com": false,
+    },
   });
 });
 
@@ -68,7 +78,7 @@ test("builds persistent all-frame registrations", () => {
       js: ["content.js"],
       runAt: "document_start",
       allFrames: true,
-      persistAcrossSessions: true
-    }
+      persistAcrossSessions: true,
+    },
   );
 });

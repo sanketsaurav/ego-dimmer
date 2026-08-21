@@ -4,7 +4,7 @@
 
 Ego Dimmer does not collect, transmit, sell, or share personal information. It has no analytics, advertising, tracking, remote code, or background network requests.
 
-The extension stores only its enabled state, selected intensity, and the domains the user chooses to configure. These preferences are stored with Chrome's `storage.sync` API and may be synchronized by Chrome through the user's signed-in browser profile. Ego Dimmer's developer does not receive or have access to that data.
+The extension stores only its selected intensity and the domains where the user enables dimming. These preferences are stored with Chrome's `storage.sync` API and may be synchronized by Chrome through the user's signed-in browser profile. Ego Dimmer's developer does not receive or have access to that data.
 
 Ego Dimmer reads the hostname of the active tab only after the user opens the popup, so it can show controls for the current site. It applies a CSS luminance limit to images, videos, and canvases on enabled sites. It does not read their contents, inspect whether media is HDR, alter page content, or observe browsing history.
 
