@@ -25,11 +25,13 @@ jobs:
           node-version: 24
           package-manager-cache: false
 
+      - name: Install development dependencies
+        run: npm ci
+
       - name: Verify tag and extension
         run: |
           node scripts/check-version.mjs "$GITHUB_REF_NAME"
-          npm test
-          npm run validate
+          npm run check
 
       - name: Build Chrome Web Store package
         run: npm run package

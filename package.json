@@ -2,14 +2,24 @@
   "name": "ego-dimmer",
   "version": "1.0.0",
   "private": true,
+  "license": "MIT",
   "description": "Targeted HDR neutralizer for Chrome",
   "scripts": {
-    "test": "node --test",
-    "validate": "node scripts/validate.mjs",
+    "check": "npm run format:check && npm run lint && npm test && npm run validate",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
     "package": "node scripts/package.mjs",
-    "preview": "node scripts/preview.mjs"
+    "preview": "node scripts/preview.mjs",
+    "test": "node --test",
+    "validate": "node scripts/validate.mjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.19.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.9.0",
+    "globals": "^17.11.0",
+    "prettier": "^3.9.6"
   }
 }

@@ -22,8 +22,8 @@ The IDs and provider names are configuration, not secrets. No private key is sto
 Run:
 
 ```sh
-npm test
-npm run validate
+npm ci
+npm run check
 npm run package
 ```
 
@@ -108,11 +108,11 @@ The final command prints the provider name used in GitHub, in the form `projects
 
 Create an environment named `chrome-web-store` under **Repository Settings → Environments**. Add these environment variables:
 
-| Variable | Value |
-| --- | --- |
-| `CWS_PUBLISHER_ID` | Chrome Web Store publisher ID |
-| `CWS_EXTENSION_ID` | 32-character extension/item ID |
-| `CWS_SERVICE_ACCOUNT` | Full service-account email |
+| Variable                         | Value                            |
+| -------------------------------- | -------------------------------- |
+| `CWS_PUBLISHER_ID`               | Chrome Web Store publisher ID    |
+| `CWS_EXTENSION_ID`               | 32-character extension/item ID   |
+| `CWS_SERVICE_ACCOUNT`            | Full service-account email       |
 | `GCP_WORKLOAD_IDENTITY_PROVIDER` | Full provider name printed above |
 
 Optionally add required reviewers to this environment. A release tag will then wait for human approval immediately before it uploads to the Chrome Web Store, while the GitHub Release can still be created automatically.

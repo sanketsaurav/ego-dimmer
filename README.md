@@ -1,72 +1,87 @@
 # Ego Dimmer
 
-Ego Dimmer is a tiny Chrome extension that brings attention-seeking HDR images and media back to normal SDR brightness. LinkedIn, X, and Twitter are covered by default, and any other website can be added from the popup.
+Ego Dimmer is a Chrome extension that brings attention-seeking HDR images and video back to a comfortable brightness. Turn it on for the current website, choose how much HDR headroom to keep, and get back to the page without the glare.
 
-The extension is Manifest V3, dependency-free, and build-free. It does not inspect, download, proxy, or modify images. It does not include analytics or make network requests.
+It works locally in Chrome. There is no analytics, tracking, advertising, account, or background network activity.
 
-## How it works
+## What it does
 
-Chrome renders HDR images above SDR reference white on supported displays. Ego Dimmer applies the browser-native [`dynamic-range-limit`](https://developer.mozilla.org/en-US/docs/Web/CSS/dynamic-range-limit) CSS property directly to `img`, `video`, and `canvas` elements. **Full SDR** uses `standard`; **Gentle** uses `constrained`. Applying either value to ordinary SDR media is a no-op.
+- Dims HDR images, videos, and canvases on websites you choose.
+- Includes LinkedIn, X, and Twitter by default.
+- Offers two levels: **Full SDR** removes extra HDR brightness, while **Gentle** keeps a little HDR headroom.
+- Requests access to other websites only when you turn dimming on for that site.
+- Revokes a custom website's permission when you turn dimming off there.
+- Stores your selected intensity and enabled websites in Chrome Sync.
 
-The content script runs at `document_start`, so the default enabled state is applied before page media paints. Settings live in `chrome.storage.sync`, and open pages react to changes immediately without a reload.
+Ego Dimmer does not inspect, download, proxy, or modify media. Ordinary SDR media is unaffected.
 
-## Install unpacked
+## Install
+
+### Chrome Web Store
+
+The Chrome Web Store listing will be linked here after the first public release.
+
+### Install from source
 
 1. Clone or download this repository.
 2. Open `chrome://extensions` in Chrome 136 or newer.
 3. Turn on **Developer mode**.
-4. Click **Load unpacked** and choose this repository folder.
-5. Pin Ego Dimmer from Chrome's Extensions menu if you want it visible in the toolbar.
+4. Click **Load unpacked** and choose the repository folder.
+5. Optionally pin Ego Dimmer from Chrome's Extensions menu.
 
-Older Chrome versions can load the extension but ignore the unsupported CSS property.
+No build step is required to load the extension.
 
-## Use it
+## Use Ego Dimmer
 
-- Use the master switch to turn the effect on or off everywhere.
-- Toggle LinkedIn, X, or Twitter independently in the site list.
-- On a normal website, choose **Add this site**, approve Chrome's host-permission prompt, then reload that tab once.
-- Add a domain or full URL manually with the input at the bottom of the popup.
-- Remove a custom site with its × button. Default sites can be disabled but not removed.
-- Choose **Full SDR** for complete neutralization or **Gentle** for limited HDR headroom.
+1. Open the website whose HDR media you want to control.
+2. Open Ego Dimmer and turn on the large switch.
+3. If Chrome asks for access to that website, approve the request and reload the tab once.
+4. Choose **Full SDR** or **Gentle**.
 
-Custom host access is requested only when you add a site. Removing it also revokes that access.
+Open the popup again to change the intensity or turn dimming off for that website.
 
-## Develop and verify
+## How it works
 
-There is no install step and no runtime dependency.
+Chrome can display HDR media above normal SDR reference white on supported displays. Ego Dimmer uses the browser-native [`dynamic-range-limit`](https://developer.mozilla.org/en-US/docs/Web/CSS/dynamic-range-limit) CSS property to limit that extra brightness:
+
+- **Full SDR** applies `standard`.
+- **Gentle** applies `constrained`.
+
+The content script runs at `document_start`, before page media paints. Settings are stored with `chrome.storage.sync`, and open pages respond to intensity changes immediately.
+
+Chrome versions older than 136 can load the extension but ignore the unsupported CSS property.
+
+## Privacy and permissions
+
+Ego Dimmer collects and transmits no personal data. Its permissions are limited to what the current-site controls require:
+
+- `storage` saves your intensity and enabled websites in Chrome Sync.
+- `activeTab` identifies the current website after you open the popup.
+- `scripting` registers the shared dimming script on websites you explicitly enable.
+- LinkedIn, X, and Twitter host access runs the dimming script on the default websites.
+- Optional host access is requested one website at a time and revoked when you turn that website off.
+
+Read the complete [privacy policy](PRIVACY.md).
+
+## Inspect and contribute
+
+The extension source is intentionally direct: no framework, bundler, minification, remote code, or runtime dependencies. The files in this repository are the files Chrome runs.
+
+To work on Ego Dimmer, install the development tools and run the complete verification suite:
 
 ```sh
-npm test
-npm run validate
-npm run package
+npm ci
+npm run check
 ```
 
-`npm run package` writes a reproducible Chrome Web Store ZIP to `dist/`.
+Useful commands:
 
-For manual HDR QA, add the [Chromium HDR headroom example](https://ccameron-chromium.github.io/hdr-headroom-limit/example.html), reload it, and inspect an image with:
+- `npm run preview` opens the popup preview at `http://127.0.0.1:4174/`.
+- `npm run format` formats supported source and documentation files.
+- `npm run package` creates the Chrome Web Store ZIP in `dist/`.
 
-```js
-getComputedStyle(document.querySelector("img")).getPropertyValue("dynamic-range-limit")
-```
+Bug reports and focused pull requests are welcome. [Open an issue](https://github.com/sanketsaurav/ego-dimmer/issues) to start a discussion.
 
-The expected result is `standard`, `constrained`, or `no-limit`, matching the popup state.
+## License
 
-## Releases and Chrome Web Store publishing
-
-Pushing a tag such as `v1.0.1` runs tests, verifies the tag matches `manifest.json`, creates the store ZIP, publishes a GitHub Release, uploads the package to the Chrome Web Store API v2, and submits it for review with automatic publication after approval.
-
-Chrome requires the store item and listing to be created manually once. Follow [the one-time publishing setup](docs/CHROME_WEB_STORE.md) before pushing a release tag.
-
-## Permissions
-
-- `storage`: save the master switch, intensity, and site list in Chrome Sync.
-- `scripting`: register the shared content script for sites you explicitly add.
-- `activeTab`: identify the current tab after you open the popup.
-- LinkedIn/X/Twitter access: run the static content script on the three default sites.
-- Optional website access: requested one site at a time through Chrome's permission prompt.
-
-See the full [privacy policy](PRIVACY.md).
-
-## Change the name
-
-The installed extension name and description live in `manifest.json`; the visible popup wordmark lives in `popup.html`. Search the repository for `Ego Dimmer` before packaging so the README, privacy policy, and release documentation stay consistent.
+Ego Dimmer is open source under the [MIT License](LICENSE).

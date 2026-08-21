@@ -3,7 +3,10 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import vm from "node:vm";
 
-const source = await readFile(new URL("../content.js", import.meta.url), "utf8");
+const source = await readFile(
+  new URL("../content.js", import.meta.url),
+  "utf8",
+);
 
 function loadContent(hostname = "www.linkedin.com") {
   const root = {
@@ -12,7 +15,7 @@ function loadContent(hostname = "www.linkedin.com") {
       if (name === "data-egodim-mode") {
         delete this.dataset.egodimMode;
       }
-    }
+    },
   };
   let storageCallback;
   let changeListener;
@@ -26,15 +29,15 @@ function loadContent(hostname = "www.linkedin.com") {
         sync: {
           get(_keys, callback) {
             storageCallback = callback;
-          }
+          },
         },
         onChanged: {
           addListener(listener) {
             changeListener = listener;
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   });
   vm.runInContext(source, context);
   return { changeListener, context, root, storageCallback };
@@ -46,48 +49,61 @@ test("sets the optimistic clamp synchronously before storage resolves", () => {
   assert.equal(typeof extension.storageCallback, "function");
 });
 
-test("reconciles stored mode, site state, and master state", () => {
+test("reconciles stored mode and current-site state", () => {
   const extension = loadContent("media.example.com");
   extension.storageCallback({
-    enabled: true,
     mode: "constrained",
-    sites: { "example.com": true }
+    sites: { "example.com": true },
   });
   assert.equal(extension.root.dataset.egodimMode, "constrained");
 
   extension.changeListener(
-    { enabled: { oldValue: true, newValue: false } },
-    "sync"
+    { mode: { oldValue: "constrained", newValue: "standard" } },
+    "sync",
   );
-  assert.equal(extension.root.dataset.egodimMode, undefined);
+  assert.equal(extension.root.dataset.egodimMode, "standard");
 
   extension.changeListener(
     {
-      enabled: { oldValue: false, newValue: true },
-      mode: { oldValue: "constrained", newValue: "standard" }
+      sites: {
+        oldValue: { "example.com": true },
+        newValue: { "example.com": false },
+      },
     },
-    "sync"
+    "sync",
   );
+  assert.equal(extension.root.dataset.egodimMode, undefined);
+});
+
+test("ignores the removed legacy master switch", () => {
+  const extension = loadContent();
+  extension.storageCallback({
+    enabled: false,
+    mode: "standard",
+    sites: { "linkedin.com": true },
+  });
   assert.equal(extension.root.dataset.egodimMode, "standard");
 });
 
 test("a more specific stored domain wins", () => {
   const extension = loadContent("profile.news.example.com");
   extension.storageCallback({
-    enabled: true,
     mode: "standard",
     sites: {
       "example.com": true,
-      "news.example.com": false
-    }
+      "news.example.com": false,
+    },
   });
   assert.equal(extension.root.dataset.egodimMode, undefined);
 });
 
 test("changes in other storage areas are ignored", () => {
   const extension = loadContent();
-  extension.storageCallback({ enabled: true, mode: "standard", sites: {} });
+  extension.storageCallback({ mode: "standard", sites: {} });
   assert.equal(extension.root.dataset.egodimMode, "standard");
-  extension.changeListener({ enabled: { newValue: false } }, "local");
+  extension.changeListener(
+    { sites: { newValue: { "linkedin.com": false } } },
+    "local",
+  );
   assert.equal(extension.root.dataset.egodimMode, "standard");
 });

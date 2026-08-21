@@ -31,7 +31,7 @@ const requiredFiles = [
   "icons/icon32.png",
   "icons/icon48.png",
   "icons/icon128.png",
-  "README.md"
+  "README.md",
 ];
 
 await Promise.all(requiredFiles.map(requireFile));
@@ -49,7 +49,10 @@ if (JSON.stringify(actualPermissions) !== JSON.stringify(expectedPermissions)) {
   errors.push(`Unexpected permissions: ${actualPermissions.join(", ")}`);
 }
 
-if (JSON.stringify(manifest.optional_host_permissions) !== JSON.stringify(["*://*/*"])) {
+if (
+  JSON.stringify(manifest.optional_host_permissions) !==
+  JSON.stringify(["*://*/*"])
+) {
   errors.push("optional_host_permissions must be exactly *://*/*");
 }
 
@@ -57,9 +60,11 @@ const contentScript = manifest.content_scripts?.[0];
 const expectedMatches = [
   "*://*.linkedin.com/*",
   "*://*.x.com/*",
-  "*://*.twitter.com/*"
+  "*://*.twitter.com/*",
 ];
-if (JSON.stringify(contentScript?.matches) !== JSON.stringify(expectedMatches)) {
+if (
+  JSON.stringify(contentScript?.matches) !== JSON.stringify(expectedMatches)
+) {
   errors.push("Default content-script match patterns do not match the PRD");
 }
 if (
@@ -68,23 +73,32 @@ if (
   JSON.stringify(contentScript?.css) !== JSON.stringify(["content.css"]) ||
   JSON.stringify(contentScript?.js) !== JSON.stringify(["content.js"])
 ) {
-  errors.push("The static content script must use the shared payload at document_start in all frames");
+  errors.push(
+    "The static content script must use the shared payload at document_start in all frames",
+  );
 }
 
 const css = await text("content.css");
 for (const mode of ["standard", "constrained"]) {
-  if (!css.includes(`data-egodim-mode="${mode}"`) || !css.includes(`dynamic-range-limit: ${mode}`)) {
+  if (
+    !css.includes(`data-egodim-mode="${mode}"`) ||
+    !css.includes(`dynamic-range-limit: ${mode}`)
+  ) {
     errors.push(`content.css is missing the ${mode} rule`);
   }
 }
 
 const contentScriptSource = await text("content.js");
-const optimisticSet = 'document.documentElement.dataset.egodimMode = "standard"';
+const optimisticSet =
+  'document.documentElement.dataset.egodimMode = "standard"';
 if (
   contentScriptSource.indexOf(optimisticSet) === -1 ||
-  contentScriptSource.indexOf(optimisticSet) > contentScriptSource.indexOf("chrome.storage.sync.get")
+  contentScriptSource.indexOf(optimisticSet) >
+    contentScriptSource.indexOf("chrome.storage.sync.get")
 ) {
-  errors.push("content.js must synchronously set standard mode before reading storage");
+  errors.push(
+    "content.js must synchronously set standard mode before reading storage",
+  );
 }
 
 const popupHtml = await text("popup.html");
