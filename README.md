@@ -53,7 +53,7 @@ Chrome versions older than 136 can load the extension but ignore the unsupported
 
 ## Privacy and permissions
 
-Ego Dimmer collects and transmits no personal data. Its permissions are limited to what the current-site controls require:
+Ego Dimmer has no analytics, tracking, advertising, accounts, or developer-operated servers. It reads the current site's domain when you open the popup and stores site preferences and intensity in Chrome Sync. Its permissions are limited to what the current-site controls require:
 
 - `storage` saves your intensity and enabled websites in Chrome Sync.
 - `activeTab` identifies the current website after you open the popup.
