@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ego Dimmer Release"
+  short_description: "Cut verified releases with a public changelog"
+  default_prompt: "Use $ego-dimmer-release to prepare and publish the next Ego Dimmer release."
