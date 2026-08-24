@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Ego Dimmer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Dims attention-seeking HDR profile pictures and media back to normal brightness. Seeded with LinkedIn and X; add your own sites.",
   "permissions": ["storage", "scripting", "activeTab"],
   "optional_host_permissions": ["*://*/*"],
